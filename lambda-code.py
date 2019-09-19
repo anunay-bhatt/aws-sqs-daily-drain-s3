@@ -6,14 +6,12 @@ def lambda_handler(event, context):
     sqs_client = boto3.client('sqs')
     s3_client = boto3.client('s3')
 
-    queue_url='https://sqs.us-east-1.amazonaws.com/516755875486/anunaytesting2'
-    dst_s3_bucket='anunay-another-test-doing-now'
-
+    queue_url='<url of SQS queue>'
+    dst_s3_bucket='<name of S3 bucket>'
 
     while True:
-
         messages = []
-    
+
     # Read 10 message from the SQS queue
 
         resp = sqs_client.receive_message(
@@ -30,13 +28,13 @@ def lambda_handler(event, context):
             print('No messages on the queue!')
             break
         
-    # Put the object in S3 bucket
+    # Put the object in S3 bucket. You can use encryption per your needs - SSE or KMS or none
     
         for msg2 in resp['Messages']:
             msgid='folder2/%s' %(msg2['MessageId'])
             response = s3_client.put_object(Body=msg2['Body'],Bucket=dst_s3_bucket,Key=msgid,ServerSideEncryption='AES256') 
 
-    # Signal to the queue to delete the messages since we have read those
+    # Signal to the queue to delete the messages since we have read those and dont want to extract dupliacte message again
     
         entries = [
             {'Id': msg['MessageId'], 'ReceiptHandle': msg['ReceiptHandle']}
